@@ -9,16 +9,49 @@
 
 import numpy as np
 
-
 rng = np.random.default_rng()
 
+# Shared parameters
+starting_amount = 1
+years = 50
+num_simulations = 10001
+percentiles = [1, 5, 20, 50, 80, 95, 99]
 
-matrix = rng.uniform(low=0.7, high=1.5, size=(10001, 50))
 
-amount=1. #starting amount
 
-for sim in matrix:
-    sim_amount= amount
-    for factor in sim:
-        sim_amount= sim_amount*factor
-    print(sim_amount)
+# Stock Sim -----------------
+
+stock_matrix = rng.uniform(low=0.7, high=1.5, size=(num_simulations, years))
+stock_final_amounts = []
+
+for stock_sim in stock_matrix:
+    current_amount = starting_amount
+    for stock_factor in stock_sim:
+        current_amount = current_amount * stock_factor
+    stock_final_amounts.append(current_amount)
+
+stock_final_amounts.sort()
+
+
+for p in percentiles:
+    index = int((p / 100) * (len(stock_final_amounts) - 1))
+
+
+
+# Bond Sim ------------------------
+
+bond_matrix = rng.uniform(low=0.9, high=1.2, size=(num_simulations, years))
+bond_final_amounts = []
+
+for bond_sim in bond_matrix:
+    current_amount = starting_amount
+    for bond_factor in bond_sim:
+        current_amount = current_amount * bond_factor
+    bond_final_amounts.append(current_amount)
+
+bond_final_amounts.sort()
+
+
+for p in percentiles:
+    index = int((p / 100) * (len(bond_final_amounts) - 1))
+    
