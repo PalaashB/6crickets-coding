@@ -46,12 +46,13 @@ def simulate_rebalanced_amounts(years):
     return final_amounts
 
 
-# Stock and Bond Sims -----------------
-# Waiting before starting doesn't change the outcome, only the number of
-# invested years matters, so 40/30/20/10 cover the delayed starts.
+# Stock, Bond and Rebalanced Sims -----------------
+
+
 
 stock_results = {}
 bond_results = {}
+mix_results = {}
 
 for years in year_options:
     stock_final_amounts = simulate_final_amounts(low=0.7, high=1.5, years=years)
@@ -59,6 +60,9 @@ for years in year_options:
 
     bond_final_amounts = simulate_final_amounts(low=0.9, high=1.2, years=years)
     bond_results[years] = get_percentiles(bond_final_amounts)
+
+    mix_final_amounts = simulate_rebalanced_amounts(years=years)
+    mix_results[years] = get_percentiles(mix_final_amounts)
 
 
 # Fill in results.csv ------------------------
@@ -73,9 +77,11 @@ for row_index, row in enumerate(data_rows):
     for year_index, years in enumerate(year_options):
         stock_column = 1 + (year_index * 3)
         bond_column = stock_column + 1
+        mix_column = stock_column + 2
 
         row[stock_column] = round(stock_results[years][row_index], 4)
         row[bond_column] = round(bond_results[years][row_index], 4)
+        row[mix_column] = round(mix_results[years][row_index], 4)
 
 
 with open(results_file, "w", newline="") as f:
