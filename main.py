@@ -35,6 +35,17 @@ def get_percentiles(final_amounts):
     return values
 
 
+def simulate_rebalanced_amounts(years):
+    bond_factors = rng.uniform(low=0.9, high=1.2, size=(num_simulations, years))
+    stock_factors = rng.uniform(low=0.7, high=1.5, size=(num_simulations, years))
+    
+    combined_factors = (1/3) * bond_factors + (2/3) * stock_factors
+    
+    final_amounts = starting_amount * combined_factors.prod(axis=1)
+    final_amounts.sort()
+    return final_amounts
+
+
 # Stock and Bond Sims -----------------
 # Waiting before starting doesn't change the outcome, only the number of
 # invested years matters, so 40/30/20/10 cover the delayed starts.
@@ -65,7 +76,7 @@ for row_index, row in enumerate(data_rows):
 
         row[stock_column] = round(stock_results[years][row_index], 4)
         row[bond_column] = round(bond_results[years][row_index], 4)
-        
+
 
 with open(results_file, "w", newline="") as f:
     writer = csv.writer(f)
