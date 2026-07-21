@@ -13,45 +13,35 @@ rng = np.random.default_rng()
 
 # Shared parameters
 starting_amount = 1
-years = 50
 num_simulations = 10001
 percentiles = [1, 5, 20, 50, 80, 95, 99]
 
 
-
-# Stock Sim -----------------
-
-stock_matrix = rng.uniform(low=0.7, high=1.5, size=(num_simulations, years))
-stock_final_amounts = []
-
-for stock_sim in stock_matrix:
-    current_amount = starting_amount
-    for stock_factor in stock_sim:
-        current_amount = current_amount * stock_factor
-    stock_final_amounts.append(current_amount)
-
-stock_final_amounts.sort()
+def simulate_final_amounts(low, high, years, num_simulations=num_simulations, starting_amount=starting_amount):
+    factor_matrix = rng.uniform(low=low, high=high, size=(num_simulations, years))
+    final_amounts = starting_amount * factor_matrix.prod(axis=1)
+    final_amounts.sort()
+    return final_amounts
 
 
-for p in percentiles:
-    index = int((p / 100) * (len(stock_final_amounts) - 1))
+def get_percentiles(final_amounts):
+    values = []
+    for p in percentiles:
+        index = int((p / 100) * (len(final_amounts) - 1))
+        values.append(final_amounts[index])
+    return values
 
 
+# One row per (asset, years) case, ready to be written to a csv
+header = ["asset", "years"] + [f"p{p}" for p in percentiles]
+rows = []
 
-# Bond Sim ------------------------
+bounds = {"stocks": (0.7, 1.5), "bonds": (0.9, 1.2)}
 
-bond_matrix = rng.uniform(low=0.9, high=1.2, size=(num_simulations, years))
-bond_final_amounts = []
-
-for bond_sim in bond_matrix:
-    current_amount = starting_amount
-    for bond_factor in bond_sim:
-        current_amount = current_amount * bond_factor
-    bond_final_amounts.append(current_amount)
-
-bond_final_amounts.sort()
-
-
-for p in percentiles:
-    index = int((p / 100) * (len(bond_final_amounts) - 1))
+# 50 years, plus the delayed-start variants (waiting doesn't change anything,
+# only the number of invested years matters)
+for invest_years in [50, 40, 30, 20, 10]:
+    for asset, (low, high) in bounds.items():
+        final_amounts = simulate_final_amounts(low=low, high=high, years=invest_years)
+        rows.append([asset, invest_years] + get_percentiles(final_amounts))
     
